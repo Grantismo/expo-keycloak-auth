@@ -12,18 +12,6 @@ import {
   NATIVE_REDIRECT_PATH,
 } from './const';
 
-// export interface IKeycloakConfiguration extends Partial<AuthRequestConfig> {
-//   clientId: string;
-//   disableAutoRefresh?: boolean;
-//   nativeRedirectPath?: string;
-//   realm: string;
-//   refreshTimeBuffer?: number;
-//   scheme?: string;
-//   tokenStorageKey?: string;
-//   url: string;
-// }
-
-
 export const KeycloakProvider = ({ realm, clientId, url, extraParams, children, ...options }) => {
 
   const discovery = useAutoDiscovery(getRealmURL({ realm, url }));
