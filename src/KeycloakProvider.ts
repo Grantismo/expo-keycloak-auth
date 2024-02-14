@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, HTMLAttributes, HTMLElement } from 'react';
 import { Platform } from 'react-native'
 import * as AuthSession from 'expo-auth-session';
 import {
@@ -12,7 +12,16 @@ import {
   NATIVE_REDIRECT_PATH,
 } from './const';
 
-export const KeycloakProvider = ({ realm, clientId, url, extraParams, children, ...options }) => {
+interface Props extends HTMLAttributes<HTMLElement> {
+  clientId: string,
+  realm: string,
+  url: string,
+  schema: string,
+  children: any,
+  extraParams: any
+}
+
+export const KeycloakProvider = ({ realm, clientId, url, extraParams, children, ...options }: Props) => {
 
   const discovery = useAutoDiscovery(getRealmURL({ realm, url }));
   const redirectUri = AuthSession.makeRedirectUri({
