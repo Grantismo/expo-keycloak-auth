@@ -1,32 +1,36 @@
-import React, { useCallback, useEffect, HTMLAttributes, HTMLElement } from 'react';
+import React, { useCallback, useEffect, HTMLAttributes, createContext } from 'react';
 import { Platform } from 'react-native'
 import * as AuthSession from 'expo-auth-session';
 import {
   useAuthRequest,
   useAutoDiscovery,
+  AuthRequestPromptOptions,
 } from 'expo-auth-session';
-import { KeycloakContext } from './KeycloakContext';
-import useTokenStorage from './useTokenStorage';
+import { useTokenStorage, Props as TokenProps}  from './useTokenStorage';
 import { handleTokenExchange, getRealmURL } from './helpers';
 import {
   NATIVE_REDIRECT_PATH,
 } from './const';
+import { KeycloakContext } from './KeycloakContext'
 
 interface Props extends HTMLAttributes<HTMLElement> {
   clientId: string,
   realm: string,
   url: string,
-  schema: string,
+  scheme?: string,
   children: any,
-  extraParams: any
+  extraParams?: any,
+  nativeRedirectPath?: string
+  tokenOptions?: TokenProps
 }
 
-export const KeycloakProvider = ({ realm, clientId, url, extraParams, children, ...options }: Props) => {
+
+export const KeycloakProvider = ({
+  realm, clientId, url, extraParams, children, scheme, nativeRedirectPath, tokenOptions }: Props) => {
 
   const discovery = useAutoDiscovery(getRealmURL({ realm, url }));
   const redirectUri = AuthSession.makeRedirectUri({
-    native: `${options.scheme ?? 'exp'}://${options.nativeRedirectPath ?? NATIVE_REDIRECT_PATH}`,
-    useProxy: !options.scheme,
+    native: `${scheme ?? 'exp'}://${nativeRedirectPath ?? NATIVE_REDIRECT_PATH}`,
   });
 
   const config = { redirectUri, clientId, realm, url, extraParams }
@@ -35,21 +39,21 @@ export const KeycloakProvider = ({ realm, clientId, url, extraParams, children, 
     { usePKCE: false, ...config },
     discovery,
   );
-  const [currentToken, updateToken] = useTokenStorage(options, config, discovery)
+  const [currentToken, updateToken] = useTokenStorage(tokenOptions ?? {}, config, discovery)
 
-  const handleLogin = useCallback((options) => {
+  const handleLogin = useCallback((options: AuthRequestPromptOptions) => {
     return promptAsync(options);
   }, [request])
 
   const handleLogout = () => {
     if (!currentToken) throw new Error('Not logged in.');
     try {
-      if (discovery.revocationEndpoint) {
+      if (discovery?.revocationEndpoint) {
         AuthSession.revokeAsync(
           { token: currentToken?.accessToken, ...config }, discovery
         )
       }
-      if(discovery.endSessionEndpoint) {
+      if(discovery?.endSessionEndpoint) {
         fetch(`${discovery.endSessionEndpoint}`, {
           method: 'POST',         
           headers: {

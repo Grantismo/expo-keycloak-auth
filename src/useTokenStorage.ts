@@ -6,13 +6,19 @@ import { getCurrentTimeInSeconds } from "./helpers"
 import * as AuthSession from "expo-auth-session";
 import { TokenResponse } from "expo-auth-session";
 
-const useTokenStorage = ({
+export type Props = {
+  tokenStorageKey?: string
+  refreshTimeBuffer?: number,
+  disableAutoRefresh?: boolean,
+}
+
+export const useTokenStorage = ({
   tokenStorageKey = TOKEN_STORAGE_KEY,
   refreshTimeBuffer = REFRESH_TIME_BUFFER,
   disableAutoRefresh = false
-}, config, discovery) => {
+}: Props, config, discovery) => {
 
-  const [token, setToken] = useState()
+  const [token, setToken] = useState<any>(null)
   const { getItem, setItem, removeItem } = useAsyncStorage(tokenStorageKey);
   const refreshHandler = useRef(null)
   const appState = useRef(AppState.currentState);
@@ -128,7 +134,5 @@ const useTokenStorage = ({
   }, [token])
 
 
-  return [token, updateAndSaveToken];
+  return [token, updateAndSaveToken] as const;
 };
-
-export default useTokenStorage;

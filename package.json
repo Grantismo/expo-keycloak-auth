@@ -28,5 +28,8 @@
   },
   "workspaces": [
     "example"
-  ]
+  ],
+  "dependencies": {
+    "@types/react": "^18.2.55"
+  }
 }
