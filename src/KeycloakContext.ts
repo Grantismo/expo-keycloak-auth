@@ -6,7 +6,7 @@ interface KcContext {
   isLoggedIn: boolean
   login: () => void
   logout: () => void
-  tokens: null
+  token: null
 }
 
 export const KeycloakContext = createContext<KcContext>(KC_INITIAL_VALUE);
