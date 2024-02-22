@@ -33,12 +33,13 @@ export const KeycloakProvider = ({
     native: `${scheme ?? 'exp'}://${nativeRedirectPath ?? NATIVE_REDIRECT_PATH}`,
   });
 
-  const config = { redirectUri, clientId, realm, url, extraParams }
+  const config = { redirectUri, clientId, realm, url, ...extraParams }
 
   const [request, response, promptAsync] = useAuthRequest(
     { usePKCE: false, ...config },
     discovery,
   );
+
   const [currentToken, updateToken] = useTokenStorage(tokenOptions ?? {}, config, discovery)
 
   const handleLogin = useCallback((options: AuthRequestPromptOptions) => {
@@ -70,6 +71,7 @@ export const KeycloakProvider = ({
     }
     updateToken(null)
   }
+
   useEffect(() => {
     if (response) {
       handleTokenExchange({ response, discovery, config })
@@ -80,7 +82,7 @@ export const KeycloakProvider = ({
   return (
     <KeycloakContext.Provider
       value={{
-        isLoggedIn: currentToken === undefined ? undefined : !!currentToken,
+        isLoggedIn: !!currentToken,
         login: handleLogin,
         logout: handleLogout,
         ready: discovery !== null && request !== null && currentToken !== undefined,

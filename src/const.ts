@@ -1,7 +1,9 @@
+import { AuthRequestPromptOptions } from 'expo-auth-session';
+
 export const KC_INITIAL_VALUE = {
   ready: false,
   isLoggedIn: false,
-  login: () => console.error('KC Not Initialized.'),
+  login: (options: AuthRequestPromptOptions) => console.error('KC Not Initialized.'),
   logout: () => console.error('Not Logged In.'),
   tokens: null,
 };
