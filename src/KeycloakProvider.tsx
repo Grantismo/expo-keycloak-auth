@@ -42,7 +42,7 @@ export const KeycloakProvider = ({
 
   const [currentToken, updateToken] = useTokenStorage(tokenOptions ?? {}, config, discovery)
 
-  const handleLogin = useCallback((options: AuthRequestPromptOptions) => {
+  const handleLogin = useCallback((options?: AuthRequestPromptOptions) => {
     return promptAsync(options);
   }, [request])
 

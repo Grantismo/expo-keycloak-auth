@@ -5,7 +5,7 @@ import { AuthRequestPromptOptions } from 'expo-auth-session';
 interface KcContext {
   ready: boolean
   isLoggedIn: boolean
-  login: (options: AuthRequestPromptOptions) => void
+  login: (options?: AuthRequestPromptOptions) => void
   logout: () => void
   token?: string
 }
