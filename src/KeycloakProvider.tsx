@@ -13,6 +13,8 @@ import {
 } from './const';
 import { KeycloakContext } from './KeycloakContext'
 
+const DISCOVERY_TIMEOUT_SECONDS = 10
+
 interface Props extends HTMLAttributes<HTMLElement> {
   clientId: string,
   realm: string,
@@ -21,12 +23,20 @@ interface Props extends HTMLAttributes<HTMLElement> {
   children: any,
   extraParams?: any,
   nativeRedirectPath?: string
-  tokenOptions?: TokenProps
+  tokenOptions?: TokenProps,
+  onDiscoveryError: (error: Error) => void
 }
 
-
 export const KeycloakProvider = ({
-  realm, clientId, url, extraParams, children, scheme, nativeRedirectPath, tokenOptions }: Props) => {
+  realm,
+  clientId,
+  url,
+  extraParams,
+  children,
+  scheme,
+  nativeRedirectPath,
+  tokenOptions,
+  onDiscoveryError }: Props) => {
 
   const discovery = useAutoDiscovery(getRealmURL({ realm, url }));
   const redirectUri = AuthSession.makeRedirectUri({
@@ -71,6 +81,15 @@ export const KeycloakProvider = ({
     }
     updateToken(null)
   }
+
+  useEffect(() => {
+    const discoveryWait = setTimeout(() => {
+      if(!discovery) {
+        onDiscoveryError(new Error("timeout waiting for auth url"))
+      }
+    }, DISCOVERY_TIMEOUT_SECONDS*1000) 
+    return () => clearTimeout(discoveryWait)
+  }, [])
 
   useEffect(() => {
     if (response) {
