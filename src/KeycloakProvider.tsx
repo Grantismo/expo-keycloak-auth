@@ -36,7 +36,7 @@ export const KeycloakProvider = ({
   const config = { redirectUri, clientId, realm, url, ...extraParams }
 
   const [request, response, promptAsync] = useAuthRequest(
-    { usePKCE: false, ...config },
+    { usePKCE: true, ...config },
     discovery,
   );
 
