@@ -5,7 +5,7 @@ export const KC_INITIAL_VALUE = {
   isLoggedIn: false,
   login: (options?: AuthRequestPromptOptions) => console.error('KC Not Initialized.'),
   logout: () => console.error('Not Logged In.'),
-  tokens: null,
+  token: null
 };
 export const NATIVE_REDIRECT_PATH = 'auth/redirect';
 export const TOKEN_STORAGE_KEY = 'keycloak_token';

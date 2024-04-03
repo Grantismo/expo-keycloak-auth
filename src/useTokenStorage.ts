@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { AppState, Platform } from "react-native"
+import { AppState, Platform, AppStateStatus } from "react-native"
 import { useAsyncStorage } from '@react-native-async-storage/async-storage';
 import { REFRESH_TIME_BUFFER, TOKEN_STORAGE_KEY } from './const';
-import { getCurrentTimeInSeconds } from "./helpers"
+import { getCurrentTimeInSeconds, Config } from "./helpers"
 import * as AuthSession from "expo-auth-session";
-import { TokenResponse } from "expo-auth-session";
+import { TokenResponse, DiscoveryDocument } from "expo-auth-session";
+
+type Timeout = ReturnType<typeof setTimeout>
 
 export type Props = {
   tokenStorageKey?: string
@@ -16,16 +18,16 @@ export const useTokenStorage = ({
   tokenStorageKey = TOKEN_STORAGE_KEY,
   refreshTimeBuffer = REFRESH_TIME_BUFFER,
   disableAutoRefresh = false
-}: Props, config, discovery) => {
+}: Props, config: Config, discovery: DiscoveryDocument|null) => {
 
-  const [token, setToken] = useState<any>(null)
+  const [token, setToken] = useState<TokenResponse|null>(null)
   const { getItem, setItem, removeItem } = useAsyncStorage(tokenStorageKey);
-  const refreshHandler = useRef(null)
+  const refreshHandler = useRef<Timeout|null>(null)
   const appState = useRef(AppState.currentState);
-  const refreshTime = useRef(null)
-  const tokenData = useRef(null)
+  const refreshTime = useRef<number|null>(null)
+  const tokenData = useRef<TokenResponse|null>(null)
 
-  async function updateAndSaveToken(newToken) {
+  async function updateAndSaveToken(newToken: TokenResponse|null) {
     try {
       setToken(newToken)
       if (newToken !== null) {
@@ -39,10 +41,10 @@ export const useTokenStorage = ({
     }
   }
 
-  const handleTokenRefresh = (token) => {
+  const handleTokenRefresh = (token: TokenResponse) => {
     AuthSession.refreshAsync(
       { refreshToken: token.refreshToken, ...config },
-      discovery
+      discovery!
     )
       .then((tokenResponse) => {
         updateAndSaveToken(tokenResponse)
@@ -53,7 +55,7 @@ export const useTokenStorage = ({
   }
 
   useEffect(() => {
-    const handleAppState = nextAppState => {
+    const handleAppState = (nextAppState: AppStateStatus) => {
       if (
         appState.current.match(/inactive|background/) &&
         nextAppState === "active"
@@ -62,12 +64,12 @@ export const useTokenStorage = ({
           clearTimeout(refreshHandler.current)
           const now = getCurrentTimeInSeconds()
 
-          if (refreshTime.current <= now) {
+          if (!refreshTime.current || refreshTime.current <= now) {
             setToken(null)
           } else {
             const timeout = 1000 * (refreshTime.current - now)
             refreshHandler.current = setTimeout(() => {
-              handleTokenRefresh(tokenData.current)
+              handleTokenRefresh(tokenData.current!)
             }, timeout)
           }
         }
@@ -79,8 +81,6 @@ export const useTokenStorage = ({
     return () => {
       if (subscription) {
         subscription.remove()
-      } else {
-        AppState.removeEventListener("change", handleAppState)
       }
     };
   }, []);
@@ -124,7 +124,7 @@ export const useTokenStorage = ({
       }
       if (token === null && tokenData.current !== null) {
         AuthSession.revokeAsync(
-          { token: tokenData.current?.accessToken, ...config }, discovery
+          { token: tokenData.current?.accessToken, ...config }, discovery!
         )
         Platform.OS === 'ios' && AuthSession.dismiss();
         refreshTime.current = null

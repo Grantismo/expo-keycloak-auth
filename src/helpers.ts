@@ -1,5 +1,13 @@
-import * as AuthSession from "expo-auth-session";
-export const getRealmURL = (config) => {
+import { DiscoveryDocument, AuthSessionResult, exchangeCodeAsync } from 'expo-auth-session';
+
+export interface Config {
+  realm: string;
+  url: string;
+  redirectUri: string;
+  clientId: string;
+}
+
+export const getRealmURL = (config: {url: string, realm: string}) => {
   const { url, realm } = config;
   const slash = url.endsWith('/') ? '' : '/';
   return `${url + slash}realms/${encodeURIComponent(realm)}`;
@@ -13,10 +21,10 @@ export const handleTokenExchange = async ({
   response,
   discovery,
   config,
-}) => {
+}: {response: AuthSessionResult | null, discovery: DiscoveryDocument|null, config: Config}) => {
   try {
     if (response?.type === 'success' && !!(discovery?.tokenEndpoint)) {
-      const token = await AuthSession.exchangeCodeAsync(
+      const token = await exchangeCodeAsync(
         { code: response.params.code, ...config },
         discovery,
       );

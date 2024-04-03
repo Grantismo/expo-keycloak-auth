@@ -7,7 +7,7 @@ import {
   AuthRequestPromptOptions,
 } from 'expo-auth-session';
 import { useTokenStorage, Props as TokenProps}  from './useTokenStorage';
-import { handleTokenExchange, getRealmURL } from './helpers';
+import { handleTokenExchange, getRealmURL, Config } from './helpers';
 import {
   NATIVE_REDIRECT_PATH,
 } from './const';
@@ -43,7 +43,7 @@ export const KeycloakProvider = ({
     native: `${scheme ?? 'exp'}://${nativeRedirectPath ?? NATIVE_REDIRECT_PATH}`,
   });
 
-  const config = { redirectUri, clientId, realm, url, ...extraParams }
+  const config: Config = { redirectUri, clientId, realm, url, ...extraParams }
 
   const [request, response, promptAsync] = useAuthRequest(
     { usePKCE: true, ...config },
